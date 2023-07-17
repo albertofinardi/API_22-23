@@ -6,13 +6,13 @@
 
 typedef struct heap_
 {
-    int v[MAX_HEAP];
-    int size;
+    unsigned long int v[MAX_HEAP];
+    unsigned short size;
 } heap_t;
 
 typedef struct stazione_
 {
-    int key;             // distanza
+    unsigned long int key;             // distanza
     heap_t *heap;        // macchine
     struct stazione_ *p; // padre
     struct stazione_ *l; // left
@@ -25,19 +25,19 @@ typedef struct bst_
 } bst_t;
 
 void heap_print(heap_t *heap);
-stazione_t *bst_search(stazione_t *bst, int key);
-stazione_t *bst_insert(int key);
+stazione_t *bst_search(stazione_t *bst, unsigned long int key);
+stazione_t *bst_insert(unsigned long int key);
 stazione_t *bst_min(stazione_t *x);
 stazione_t *bst_successor(stazione_t *x);
 void inorder_bst_print(stazione_t *x);
 void bst_delete(stazione_t *x);
-void swap(int *a, int *b);
+void swap(unsigned long int *a, unsigned long int *b);
 void heap_free(heap_t *heap);
-void heap_heapify(heap_t *heap, int i);
-void heap_insert(heap_t *heap, int num);
-void heap_delete(heap_t *heap, int num);
+void heap_heapify(heap_t *heap, unsigned short i);
+void heap_insert(heap_t *heap, unsigned long int num);
+void heap_delete(heap_t *heap, unsigned long int num);
 void heap_sort(heap_t *heap);
-void bst_search_print(int key);
+void bst_search_print(unsigned long int key);
 
 bst_t *data;
 
@@ -46,12 +46,12 @@ void heap_print(heap_t *heap)
     printf("\t\tHeap: ");
     for (int i = 0; i < heap->size; i++)
     {
-        printf("%d ", heap->v[i]);
+        printf("%lu ", heap->v[i]);
     }
     printf("\n");
 }
 
-stazione_t *bst_search(stazione_t *bst, int key)
+stazione_t *bst_search(stazione_t *bst, unsigned long int key)
 {
     if (bst == NULL)
     {
@@ -70,7 +70,7 @@ stazione_t *bst_search(stazione_t *bst, int key)
     }
 }
 
-stazione_t *bst_insert(int key)
+stazione_t *bst_insert(unsigned long int key)
 {
     stazione_t *stazione;
     stazione_t *curr, *pre;
@@ -145,7 +145,7 @@ void inorder_bst_print(stazione_t *x)
     if (x != NULL)
     {
         inorder_bst_print(x->l);
-        printf("Stazione: %d\n", x->key);
+        printf("Stazione: %lu\n", x->key);
         heap_print(x->heap);
         inorder_bst_print(x->r);
     }
@@ -200,9 +200,9 @@ void bst_delete(stazione_t *x)
     printf("demolita\n");
 }
 
-void swap(int *a, int *b)
+void swap(unsigned long int *a, unsigned long int *b)
 {
-    int temp = *b;
+    unsigned long int temp = *b;
     *b = *a;
     *a = temp;
 }
@@ -213,11 +213,11 @@ void heap_free(heap_t *heap)
     free(heap);
 }
 
-void heap_heapify(heap_t *heap, int i)
+void heap_heapify(heap_t *heap, unsigned short i)
 {
-    int larg = i;
-    int left = i * 2 + 1;
-    int right = i * 2 + 2;
+    unsigned short larg = i;
+    unsigned short left = i * 2 + 1;
+    unsigned short right = i * 2 + 2;
     if (left < heap->size && heap->v[left] > heap->v[larg])
     {
         larg = left;
@@ -233,7 +233,7 @@ void heap_heapify(heap_t *heap, int i)
     }
 }
 
-void heap_insert(heap_t *heap, int num)
+void heap_insert(heap_t *heap, unsigned long int num)
 {
     if (heap->size == MAX_HEAP || heap == NULL)
     {
@@ -256,7 +256,7 @@ void heap_insert(heap_t *heap, int num)
     }
 }
 
-void heap_delete(heap_t *heap, int num)
+void heap_delete(heap_t *heap, unsigned long int num)
 {
     int i;
     for (i = 0; i < heap->size; i++)
@@ -290,11 +290,11 @@ void heap_sort(heap_t *heap)
 
 void aggiungiStazione()
 {
-    int distanza, numeroAuto, autonomiaTemp;
+    unsigned short distanza, numeroAuto, autonomiaTemp;
     // aggiungi-stazione distanza numero-auto autonomia-auto-1 ... autonomia-auto-n
-    scanf("%d ", &distanza);
+    scanf("%hu ", &distanza);
     // crea stazione
-    scanf("%d ", &numeroAuto);
+    scanf("%hu ", &numeroAuto);
 
     if (numeroAuto > MAX_HEAP || bst_search(data->root, distanza) != NULL)
     {
@@ -304,7 +304,7 @@ void aggiungiStazione()
     stazione_t *stazione = bst_insert(distanza);
     for (int i = 0; i < numeroAuto; i++)
     {
-        scanf("%d ", &autonomiaTemp);
+        scanf("%hu ", &autonomiaTemp);
         stazione->heap->v[i] = autonomiaTemp;
     }
     stazione->heap->size = numeroAuto;
@@ -313,18 +313,18 @@ void aggiungiStazione()
 
 void demolisciStazione()
 {
-    int distanza;
+    unsigned long int distanza;
     // demolisci-stazione distanza
-    scanf("%d ", &distanza);
+    scanf("%lu ", &distanza);
     bst_delete(bst_search(data->root, distanza));
 }
 
 void aggiungiAuto()
 {
-    int distanza, autonomia;
+    unsigned long int distanza, autonomia;
     // aggiungi-auto distanza-stazione autonomia-auto-da-aggiungere
-    scanf("%d ", &distanza);
-    scanf("%d ", &autonomia);
+    scanf("%lu ", &distanza);
+    scanf("%lu ", &autonomia);
 
     stazione_t *stazione = bst_search(data->root, distanza);
     if (stazione == NULL)
@@ -338,11 +338,11 @@ void aggiungiAuto()
 
 void rottamaAuto()
 {
-    int distanza, autonomia;
+    unsigned long int distanza, autonomia;
     // rottama-auto distanza-stazione autonomia-auto-da-rottamare
 
-    scanf("%d ", &distanza);
-    scanf("%d ", &autonomia);
+    scanf("%lu ", &distanza);
+    scanf("%lu ", &autonomia);
 
     stazione_t *stazione = bst_search(data->root, distanza);
     if (stazione == NULL)
@@ -358,12 +358,10 @@ void rottamaAuto()
 
 void pianificaPercorso()
 {
-    int inizio, fine;
+    unsigned long int inizio, fine;
     // pianifica-percorso distanza-stazione-partenza distanza-stazione-arrivo
-    scanf("%d ", &inizio);
-    scanf("%d ", &fine);
-
-    printf("PERCORSO %d %d\n", inizio, fine);
+    scanf("%lu ", &inizio);
+    scanf("%lu ", &fine);
     // ...
 }
 
