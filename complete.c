@@ -39,7 +39,7 @@ void heap_delete(heap_t *heap, unsigned long int num);
 void heap_sort(heap_t *heap);
 void bst_search_print(unsigned long int key);
 
-bst_t *data;
+bst_t data;
 
 void heap_print(heap_t *heap)
 {
@@ -85,7 +85,7 @@ stazione_t *bst_insert(unsigned long int key)
     stazione->heap = heapT;
     stazione->heap->size = 0;
     pre = NULL;
-    curr = data->root;
+    curr = data.root;
     while (curr != NULL)
     {
         pre = curr;
@@ -101,7 +101,7 @@ stazione_t *bst_insert(unsigned long int key)
     stazione->p = pre;
     if (pre == NULL)
     {
-        data->root = stazione;
+        data.root = stazione;
     }
     else if (key < pre->key)
     {
@@ -181,7 +181,7 @@ void bst_delete(stazione_t *x)
     }
     if (da_canc->p == NULL)
     {
-        data->root = sottoa;
+        data.root = sottoa;
     }
     else if (da_canc == da_canc->p->l)
     {
@@ -298,7 +298,7 @@ void aggiungiStazione()
     // crea stazione
     scanf("%hu ", &numeroAuto);
 
-    if (numeroAuto > MAX_HEAP || bst_search(data->root, distanza) != NULL)
+    if (numeroAuto > MAX_HEAP || bst_search(data.root, distanza) != NULL)
     {
         printf("non aggiunta\n");
         return;
@@ -319,7 +319,7 @@ void demolisciStazione()
     unsigned long int distanza;
     // demolisci-stazione distanza
     scanf("%lu ", &distanza);
-    bst_delete(bst_search(data->root, distanza));
+    bst_delete(bst_search(data.root, distanza));
 }
 
 void aggiungiAuto()
@@ -329,7 +329,7 @@ void aggiungiAuto()
     scanf("%lu ", &distanza);
     scanf("%lu ", &autonomia);
 
-    stazione_t *stazione = bst_search(data->root, distanza);
+    stazione_t *stazione = bst_search(data.root, distanza);
     if (stazione == NULL)
     {
         printf("non aggiunta\n");
@@ -347,7 +347,7 @@ void rottamaAuto()
     scanf("%lu ", &distanza);
     scanf("%lu ", &autonomia);
 
-    stazione_t *stazione = bst_search(data->root, distanza);
+    stazione_t *stazione = bst_search(data.root, distanza);
     if (stazione == NULL)
     {
         printf("non rottamata\n");
@@ -371,7 +371,7 @@ void pianificaPercorso()
 void visualizza()
 {
     printf("\n\nDATA\n");
-    inorder_bst_print(data->root);
+    inorder_bst_print(data.root);
     printf("\n\n");
 }
 
@@ -379,7 +379,7 @@ void visualizzaStazione() {
     unsigned long int dist;
     scanf("%lu ", &dist);
     printf("\n\nDATA\n");
-    stazione_t *x = bst_search(data->root, dist);
+    stazione_t *x = bst_search(data.root, dist);
     printf("Stazione: %lu\n", x->key);
     heap_print(x->heap);
 }
