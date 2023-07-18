@@ -75,14 +75,14 @@ stazione_t *bst_insert(unsigned long int key)
     stazione_t *stazione;
     stazione_t *curr, *pre;
     stazione = malloc(sizeof(stazione_t));
-    heap_t *heap = malloc(sizeof(heap_t));
-    if (stazione == NULL || heap == NULL)
+    heap_t *heapT = malloc(sizeof(heap_t));
+    if (stazione == NULL || heapT == NULL)
     {
         printf("non aggiunta\n");
         return NULL;
     }
     stazione->key = key;
-    stazione->heap = heap;
+    stazione->heap = heapT;
     stazione->heap->size = 0;
     pre = NULL;
     curr = data->root;
@@ -154,7 +154,7 @@ void inorder_bst_print(stazione_t *x)
 void bst_delete(stazione_t *x)
 {
     stazione_t *da_canc, *sottoa;
-    if (x == NULL)
+    if (x == NULL) // stazione non esiste
     {
         printf("non demolita\n");
         return;
@@ -194,6 +194,7 @@ void bst_delete(stazione_t *x)
     if (da_canc != x)
     {
         x->key = da_canc->key;
+        x->heap = da_canc->heap;
     }
     heap_free(da_canc->heap);
     free(da_canc);
@@ -290,9 +291,10 @@ void heap_sort(heap_t *heap)
 
 void aggiungiStazione()
 {
-    unsigned short distanza, numeroAuto, autonomiaTemp;
+    unsigned long distanza, autonomiaTemp;
+    unsigned short numeroAuto;
     // aggiungi-stazione distanza numero-auto autonomia-auto-1 ... autonomia-auto-n
-    scanf("%hu ", &distanza);
+    scanf("%lu ", &distanza);
     // crea stazione
     scanf("%hu ", &numeroAuto);
 
@@ -304,7 +306,8 @@ void aggiungiStazione()
     stazione_t *stazione = bst_insert(distanza);
     for (int i = 0; i < numeroAuto; i++)
     {
-        scanf("%hu ", &autonomiaTemp);
+        scanf("%lu ", &autonomiaTemp);
+        //heap_insert(stazione->heap, autonomiaTemp);
         stazione->heap->v[i] = autonomiaTemp;
     }
     stazione->heap->size = numeroAuto;
@@ -372,6 +375,15 @@ void visualizza()
     printf("\n\n");
 }
 
+void visualizzaStazione() {
+    unsigned long int dist;
+    scanf("%lu ", &dist);
+    printf("\n\nDATA\n");
+    stazione_t *x = bst_search(data->root, dist);
+    printf("Stazione: %lu\n", x->key);
+    heap_print(x->heap);
+}
+
 void parser()
 {
     char istr[MAX_ISTR + 1];
@@ -401,9 +413,9 @@ void parser()
         {
             visualizza();
         }
-        else
+        else if (!strcmp(istr, "visualizza-staz"))
         {
-            printf("Error!\n");
+            visualizzaStazione();
         }
     }
 }
