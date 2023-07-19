@@ -44,10 +44,10 @@ int main()
     for (int i = 1; i <= 111; i++)
     {
         itoa(i, num);
-        strcpy(path1, "archivio_test_aperti/open_");
+        strcpy(path1, "files/tests/open_");
         strcat(path1, num);
         strcat(path1, ".txt");
-        strcpy(path2, "res/open_");
+        strcpy(path2, "files/res/open_");
         strcat(path2, num);
         strcat(path2, ".txt");
         strcpy(command, "./complete < ");

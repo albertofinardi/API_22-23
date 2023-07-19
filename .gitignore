@@ -1,3 +1,9 @@
-complete
-out.txt
-files/
+# Ignore all
+*
+# Unignore all with extensions
+!*.*
+
+# Ignore .txt
+*.txt
+
+*.DS_Store

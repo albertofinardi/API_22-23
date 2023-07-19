@@ -1,9 +1,24 @@
-aggiungi-stazione 91 9 5 4 5 5 4 6 5 4 5
-aggiungi-stazione 24 6 5 4 5 4 4 5
-aggiungi-stazione 92 6 5 4 4 5 5 5
-demolisci-stazione 59
-aggiungi-stazione 52 9 13 14 13 17 17 15 18 15 16
-aggiungi-auto 91 39
-aggiungi-auto 52 39
-aggiungi-auto 24 28
+aggiungi-stazione 288 7 2 3 2 3 3 2 3
+aggiungi-stazione 172 10 10 8 8 8 8 10 10 9 8 10
+aggiungi-stazione 61 8 19 25 19 19 24 18 25 20
+aggiungi-stazione 129 0
+visualizza
+aggiungi-auto 129 17
+aggiungi-auto 129 20
+aggiungi-auto 129 21
+aggiungi-auto 129 22
+aggiungi-auto 129 16
+aggiungi-auto 129 19
+aggiungi-auto 129 19
+visualizza
+rottama-auto 288 2
+rottama-auto 61 8
+rottama-auto 61 4
+visualizza
+aggiungi-stazione 223 11 3 3 3 5 3 4 3 5 3 4 4
+rottama-auto 233 3
+aggiungi-stazione 359 8 10 11 10 8 8 8 9 8
+aggiungi-stazione 66 10 21 23 20 24 23 22 25 19 24 25
+visualizza
+demolisci-stazione 223
 visualizza

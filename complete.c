@@ -10,8 +10,8 @@ typedef struct stazione_
     struct stazione_ *p;               // padre
     struct stazione_ *l;               // left
     struct stazione_ *r;               // right
-    unsigned long int v[MAX_HEAP];     // macchine
-    unsigned short size;               // numero macchine
+    unsigned long int *v;     // macchine
+    unsigned short int size;               // numero macchine
 } stazione_t;
 
 typedef struct bst_
@@ -49,7 +49,6 @@ stazione_t *bst_search(stazione_t *bst, unsigned long int key)
 {
     if (bst == NULL)
     {
-        // printf("non trovata\n");
         return NULL;
     }
     if (key == bst->key)
@@ -186,11 +185,9 @@ void bst_delete(stazione_t *x)
     if (da_canc != x)
     {
         x->key = da_canc->key;
-        //x->v = da_canc->v;
+        free(x->v);
+        x->v = da_canc->v;
         x->size = da_canc->size;
-        for(int i=0; i<x->size; i++){ // provare magari con un puntatore se e' piu' veloce
-            x->v[i] = da_canc->v[i];
-        }
     }
     free(da_canc);
     printf("demolita\n");
@@ -293,13 +290,14 @@ void aggiungiStazione()
         return;
     }
     stazione_t *stazione = bst_insert(distanza);
+    stazione->size = numeroAuto;
+    stazione->v = malloc(sizeof(unsigned long int) * MAX_HEAP);
     for (int i = 0; i < numeroAuto; i++)
     {
         scanf("%lu ", &autonomiaTemp);
         //heap_insert(stazione->heap, autonomiaTemp);
         stazione->v[i] = autonomiaTemp;
     }
-    stazione->size = numeroAuto;
     heap_sort(stazione->v, stazione->size);
 }
 
@@ -354,6 +352,7 @@ void pianificaPercorso()
     // pianifica-percorso distanza-stazione-partenza distanza-stazione-arrivo
     scanf("%lu ", &inizio);
     scanf("%lu ", &fine);
+    printf("P\n");
     // ...
 }
 
