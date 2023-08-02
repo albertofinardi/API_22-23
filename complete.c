@@ -10,14 +10,19 @@ typedef struct stazione_
     struct stazione_ *p;               // padre
     struct stazione_ *l;               // left
     struct stazione_ *r;               // right
-    unsigned long int *v;     // macchine
-    unsigned short int size;               // numero macchine
+    unsigned long int *v;              // macchine
+    unsigned short int size;           // numero macchine
 } stazione_t;
 
 typedef struct bst_
 {
     stazione_t *root;
 } bst_t;
+
+typedef struct lista_ {
+    struct lista_ *next;
+    stazione_t *stazione;
+} lista_t;
 
 void heap_print(unsigned long int v[], unsigned short size);
 stazione_t *bst_search(stazione_t *bst, unsigned long int key);
@@ -34,6 +39,38 @@ void heap_sort(unsigned long int v[], unsigned short size);
 void bst_search_print(unsigned long int key);
 
 bst_t data;
+
+lista_t* lista_enqueue(lista_t* lista, stazione_t *stazione){
+  lista_t *prec;
+  lista_t *tmp;
+  tmp = malloc(sizeof(lista_t));
+  if(tmp != NULL){
+    tmp->next = NULL;
+    tmp->stazione = stazione;
+    if(lista == NULL)
+      lista = tmp;
+    else{
+      for(prec=lista;prec->next!=NULL;prec=prec->next);
+      prec->next = tmp;
+    }
+  } else
+      printf("Memoria esaurita!\n");
+  return lista;
+}
+void lista_print_and_delete(lista_t* lista){
+  lista_t* tmp;
+  while(lista!= NULL){
+    tmp = lista;
+    lista = lista->next;
+    if(lista == NULL){
+        // ultima stazione
+        printf("%lu", tmp->stazione->key);
+    } else {
+        printf("%lu ", tmp->stazione->key);
+    }
+    free(tmp);
+  }
+}
 
 void heap_print(unsigned long int v[], unsigned short size)
 {
@@ -115,6 +152,14 @@ stazione_t *bst_min(stazione_t *x)
     return x;
 }
 
+stazione_t *bst_max(stazione_t *x){
+    while (x->r != NULL)
+    {
+        x = x->r;
+    }
+    return x;
+}
+
 stazione_t *bst_successor(stazione_t *x)
 {
     stazione_t *y;
@@ -124,6 +169,21 @@ stazione_t *bst_successor(stazione_t *x)
     }
     y = x->p;
     while (y != NULL && x == y->r)
+    {
+        x = y;
+        y = y->p;
+    }
+    return y;
+}
+
+stazione_t *bst_predecessor(stazione_t *x){
+    stazione_t *y;
+    if (x->l != NULL)
+    {
+        return bst_max(x->l);
+    }
+    y = x->p;
+    while (y != NULL && x == y->l)
     {
         x = y;
         y = y->p;
@@ -275,14 +335,34 @@ void heap_sort(unsigned long int v[], unsigned short size)
     }
 }
 
+//AAA
+int test(stazione_t *a, stazione_t *b, lista_t **lista){
+    stazione_t *succ;
+    if(a->key + a->v[0] >= b->key && a->key != b->key){
+        *lista = lista_enqueue(*lista, a);
+        return 1;
+    }
+    succ = bst_successor(a);
+    if(succ == NULL || succ->key > b->key){
+        printf("AAA");
+        return 0;
+    }
+    test(succ, b, lista);
+    if(succ->key != b->key){
+        printf("entrar\n");
+        test(a, succ, lista);
+    }
+    return 1;
+}
+
 void aggiungiStazione()
 {
     unsigned long distanza, autonomiaTemp;
     unsigned short numeroAuto;
     // aggiungi-stazione distanza numero-auto autonomia-auto-1 ... autonomia-auto-n
-    scanf("%lu ", &distanza);
+    if(scanf("%lu ", &distanza)) {};
     // crea stazione
-    scanf("%hu ", &numeroAuto);
+    if(scanf("%hu ", &numeroAuto)) {};
 
     if (numeroAuto > MAX_HEAP || bst_search(data.root, distanza) != NULL)
     {
@@ -294,7 +374,7 @@ void aggiungiStazione()
     stazione->v = malloc(sizeof(unsigned long int) * MAX_HEAP);
     for (int i = 0; i < numeroAuto; i++)
     {
-        scanf("%lu ", &autonomiaTemp);
+        if(scanf("%lu ", &autonomiaTemp)) {};
         //heap_insert(stazione->heap, autonomiaTemp);
         stazione->v[i] = autonomiaTemp;
     }
@@ -305,7 +385,7 @@ void demolisciStazione()
 {
     unsigned long int distanza;
     // demolisci-stazione distanza
-    scanf("%lu ", &distanza);
+    if(scanf("%lu ", &distanza)) {};
     bst_delete(bst_search(data.root, distanza));
 }
 
@@ -313,8 +393,8 @@ void aggiungiAuto()
 {
     unsigned long int distanza, autonomia;
     // aggiungi-auto distanza-stazione autonomia-auto-da-aggiungere
-    scanf("%lu ", &distanza);
-    scanf("%lu ", &autonomia);
+    if(scanf("%lu ", &distanza)) {};
+    if(scanf("%lu ", &autonomia)) {};
 
     stazione_t *stazione = bst_search(data.root, distanza);
     if (stazione == NULL)
@@ -331,8 +411,8 @@ void rottamaAuto()
     unsigned long int distanza, autonomia;
     // rottama-auto distanza-stazione autonomia-auto-da-rottamare
 
-    scanf("%lu ", &distanza);
-    scanf("%lu ", &autonomia);
+    if(scanf("%lu ", &distanza)) {};
+    if(scanf("%lu ", &autonomia)) {};
 
     stazione_t *stazione = bst_search(data.root, distanza);
     if (stazione == NULL)
@@ -350,9 +430,23 @@ void pianificaPercorso()
 {
     unsigned long int inizio, fine;
     // pianifica-percorso distanza-stazione-partenza distanza-stazione-arrivo
-    scanf("%lu ", &inizio);
-    scanf("%lu ", &fine);
+    if(scanf("%lu ", &inizio)) {};
+    if(scanf("%lu ", &fine)) {};
+    int res;
+    lista_t *lista = malloc(sizeof(lista_t));
+    if(inizio < fine){
+        stazione_t *tmp = bst_search(data.root, inizio);
+        printf("%lu", tmp->key);
+        res = test(tmp, bst_search(data.root, fine), &lista);
+        if(res){
+            lista_print_and_delete(lista);
+        } else {
+            printf("nessun percorso\n");
+        }
+        return;
+    }
     printf("P\n");
+    return;
     // ...
 }
 
@@ -365,7 +459,7 @@ void visualizza()
 
 void visualizzaStazione() {
     unsigned long int dist;
-    scanf("%lu ", &dist);
+    if(scanf("%lu ", &dist)) {};
     printf("\n\nDATA\n");
     stazione_t *x = bst_search(data.root, dist);
     printf("Stazione: %lu\n", x->key);
