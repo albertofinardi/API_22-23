@@ -330,10 +330,7 @@ void heap_insert(int v[], int *size, int num)
     {
         v[0] = num;
         *size = 1;
-    } /*else if (num < v[0]) {
-        v[*size] = num;
-        *size += 1;
-    } */
+    }
     else
     {
         v[*size] = num;
