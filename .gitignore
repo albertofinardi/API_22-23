@@ -1,10 +1,6 @@
 # Ignore all
-*
-# Unignore all with extensions
-!*.*
-!Voti/
+files/res/
 
-# Ignore .txt
-*.txt
+*.out
 
 *.DS_Store
