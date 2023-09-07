@@ -4,7 +4,6 @@
 #define INT_MAX 2147483647
 #define MAX_ISTR 18
 #define MAX_HEAP 512
-#define MAX_ARRAY 128
 
 typedef struct stazione_
 {
@@ -35,9 +34,6 @@ typedef struct bst_
 {
     stazione_t *root;
     queue_t *Q;
-    stazione_t **adj;
-    int adjSize;
-    int adjMax;
 } bst_t;
 
 queue_node_t* createQueueNode(stazione_t* node) {
@@ -126,8 +122,15 @@ stazione_t *bst_search(stazione_t *bst, int key)
 
 stazione_t *bst_insert(int key)
 {
-    stazione_t *pre = NULL;
-    stazione_t *curr = data.root;
+    stazione_t *stazione;
+    stazione_t *curr, *pre;
+    /*if (stazione == NULL)
+    {
+        printf("non aggiunta\n");
+        return NULL;
+    }*/
+    pre = NULL;
+    curr = data.root;
     while (curr != NULL)
     {
         pre = curr;
@@ -143,12 +146,10 @@ stazione_t *bst_insert(int key)
             curr = curr->r;
         }
     }
-    stazione_t *stazione = malloc(sizeof(stazione_t));
+    stazione = malloc(sizeof(stazione_t));
     stazione->key = key;
     stazione->size = 0;
     stazione->p = pre;
-    stazione->l = NULL;
-    stazione->r = NULL;
     if (pre == NULL)
     {
         data.root = stazione;
@@ -186,7 +187,7 @@ stazione_t *bst_max(stazione_t *x){
 stazione_t *bst_successor(stazione_t *x)
 {
     // TODO: Modifica, se sono black passa direttamente al successivo oltre
-    stazione_t *y = NULL;
+    stazione_t *y;
     if(x == NULL) {
         return NULL;
     }
@@ -205,7 +206,7 @@ stazione_t *bst_successor(stazione_t *x)
 
 stazione_t *bst_predecessor(stazione_t *x){
     // TODO: Modifica, se sono black passa direttamente al precedente oltre
-    stazione_t *y = NULL;
+    stazione_t *y;
     if(x == NULL) {
         return NULL;
     }
@@ -224,7 +225,7 @@ stazione_t *bst_predecessor(stazione_t *x){
 
 void bst_delete(stazione_t *x)
 {
-    stazione_t *da_canc, *sottoa = NULL;
+    stazione_t *da_canc, *sottoa;
     if (x == NULL) // stazione non esiste
     {
         printf("non demolita\n");
@@ -328,7 +329,7 @@ void heap_insert(int v[], int *size, int num)
 
 void heap_delete(int v[], int *size, int num)
 {
-    int i = 0;
+    int i;
     for (i = 0; i < *size; i++)
     {
         if (num == v[i])
@@ -392,57 +393,43 @@ void stampaPercorso(stazione_t *tmp, stazione_t *arrivo){
 // X di 128?
 // sui 400 nel caso 100 a fine
 //prova a vedere quanti hanno color 'b' negli adiacenti (non so magari puoi toglierli)
-void adjacents(stazione_t* root, int direzione) {
+queue_node_t* adjacents(stazione_t* root, int direzione) {
     if(root == NULL){
-        data.adjSize = -1;
-        return;
+        return NULL;
     }
-    if(root->size == 0) {
-        data.adjSize = -1;
-        return;
-    }
-    data.adjSize = 0;
     if(direzione){
         // andata CONTROLLA
-        //queue_node_t *list = NULL;
+        queue_node_t *list = NULL;
+        if(root->size == 0) {
+            return NULL;
+        }
         for(stazione_t* staz = bst_successor(root); staz != NULL && root->key + root->v[0] >= staz->key; staz = bst_successor(staz)){
             if(staz->color != 'b') { // se e' black e' gia' stata visitata ed esiste percorso piu' breve
-                /*queue_node_t* new = malloc(sizeof(queue_node_t));
+                queue_node_t* new = malloc(sizeof(queue_node_t));
                 new->stazione = staz;
                 new->nextAdj = list;
-                list = new;*/
-                if(data.adjSize < data.adjMax) {
-                    data.adj[data.adjSize] = staz;
-                    data.adjSize++;
-                } else {
-                    data.adjMax += MAX_ARRAY;
-                    data.adj = realloc(data.adj, data.adjMax*sizeof(stazione_t*));
-                }
+                list = new;
             }
         }
-        //return list;
+        return list;
         // while di tutti i successivi, fino a quando superi distanza raggiungibile con autonomia
         // crei la lista e la ritorni, aggiungi in testa
     } else {
         // ritorno CONTROLLA
-        //queue_node_t *list = NULL;
+        queue_node_t *list = NULL;
+        if(root->size == 0) {
+            return NULL;
+        }
         for(stazione_t* staz = bst_predecessor(root); staz != NULL && root->key - root->v[0] <= staz->key; staz = bst_predecessor(staz)){
             if(staz->color != 'b') {
-            /*queue_node_t* new = malloc(sizeof(queue_node_t));
+            queue_node_t* new = malloc(sizeof(queue_node_t));
             new->stazione = staz;
             new->nextAdj = list;
-            list = new;*/
-            if(data.adjSize < data.adjMax) {
-                    data.adj[data.adjSize] = staz;
-                    data.adjSize++;
-                } else {
-                    data.adjMax += MAX_ARRAY;
-                    data.adj = realloc(data.adj, data.adjMax*sizeof(stazione_t*));
-                }
+            list = new;
             }
         }
 
-        //return list;
+        return list;
         // while di tutti i precedenti, fino a quando superi distanza raggiungibile con autonomia
         // crei la lista e la ritorni, aggiungi in testa
     }
@@ -460,21 +447,19 @@ void bfs(stazione_t *partenza, stazione_t *arrivo, int direzione){
             exit = 1;
         }
         if(arrivo->dist > u->dist && !exit) { // se arrivo ha gia' dist minore, inutile calcolare gli adiacenti (controlla <= se va bene)
-            adjacents(u, direzione);
-            for(int i = 0; data.adjSize != -1 && i < data.adjSize; i++){
-                stazione_t *stazione = data.adj[i];
-                if(stazione->dist > u->dist) {
-                    stazione->dist = u->dist + 1;
-                    if(stazione->adjPrec == NULL) {
-                        stazione->adjPrec = u;
+            for(queue_node_t *temp = adjacents(u, direzione); temp != NULL; temp = temp->nextAdj){
+                if(temp->stazione->dist > u->dist) {
+                    temp->stazione->dist = u->dist + 1;
+                    if(temp->stazione->adjPrec == NULL) {
+                        temp->stazione->adjPrec = u;
                     }
-                    if(stazione->adjPrec->key > u->key){
-                        stazione->adjPrec = u; 
+                    if(temp->stazione->adjPrec->key > u->key){
+                        temp->stazione->adjPrec = u; 
                     } // in teoria, se partendo da partenza nel ritorno stampo adjPrec, ho percorso
 
-                    if (stazione->color == 'w') {
-                        stazione->color = 'g';
-                        enqueue(data.Q, stazione);
+                    if (temp->stazione->color == 'w') {
+                        temp->stazione->color = 'g';
+                        enqueue(data.Q, temp->stazione);
                     }
                 }
                 u->color = 'b';
@@ -562,20 +547,6 @@ void rottamaAuto()
     //  rimuovi auto alla lista di auto della stazione (se presente)
 }
 
-void demolisciNodo(stazione_t *x){
-    if(x == NULL){
-        return;
-    }
-    demolisciNodo(x->l);
-    demolisciNodo(x->r);
-    free(x->v);
-    free(x);
-}
-
-void demolisciAlbero() {
-    demolisciNodo(data.root);
-}
-
 void pianificaPercorso()
 {
     int inizio, fine;
@@ -627,13 +598,6 @@ int main(int argc, char *argv[])
 {
     data.root = NULL;
     data.Q = createQueue();
-    data.adj = malloc(sizeof(stazione_t*) * MAX_ARRAY);
-    data.adjMax = MAX_ARRAY;
-    data.adjSize = 0;
     parser();
-    //deleteQueue(data.Q);
-    demolisciAlbero();
-    free(data.adj);
-    free(data.Q);
     return 0;
 }
