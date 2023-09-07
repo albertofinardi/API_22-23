@@ -4,7 +4,7 @@
 #define INT_MAX 2147483647
 #define MAX_ISTR 18
 #define MAX_HEAP 512
-
+#define MAX_ARRAY 512
 
 typedef struct stazione_
 {
@@ -14,7 +14,6 @@ typedef struct stazione_
     struct stazione_ *r;               // right
     int *v;              // macchine
     int size;           // numero macchine
-    // struct QueueNode *adj;
     struct stazione_ *adjPrec;
     char color; // BFS
     int dist; // BFS
@@ -23,18 +22,35 @@ typedef struct stazione_
 typedef struct QueueNode {
     stazione_t* stazione;
     struct QueueNode* next;
-    struct QueueNode* nextAdj;
 } queue_node_t;
-
-typedef struct bst_
-{
-    stazione_t *root;
-} bst_t;
 
 typedef struct Queue {
     struct QueueNode* front;
     struct QueueNode* rear;
 } queue_t;
+
+typedef struct bst_
+{
+    stazione_t *root;
+    queue_t *Q;
+    stazione_t **adj;
+    int adjSize;
+    int adjMax;
+} bst_t;
+
+void getchar_scanf_int(int *number)
+{
+    char ch = getchar_unlocked();
+    if (ch == ' ') {
+        ch = getchar_unlocked();
+    }
+    *number = 0;
+    while (ch >= '0' && ch <= '9')
+    {
+        *number = *number * 10 + (ch - '0');
+        ch = getchar_unlocked();
+    }
+}
 
 queue_node_t* createQueueNode(stazione_t* node) {
     queue_node_t* newNode = malloc(sizeof(queue_node_t));
@@ -78,41 +94,22 @@ void deleteQueue(queue_t *queue){
     while(staz != NULL){
         staz = dequeue(queue);
     }
-    free(queue);
+    queue->front = queue->rear = NULL;
+    //free(queue);
 }
 
-void listPrint(queue_node_t *node){
-    queue_node_t *tmp = node;
-    for(; tmp != NULL; tmp = tmp->next){
-        printf("\t%d\n", tmp->stazione->key);
-    }
-}
-
-void heap_print(int v[], int size);
 stazione_t *bst_search(stazione_t *bst, int key);
 stazione_t *bst_insert(int key);
 stazione_t *bst_min(stazione_t *x);
 stazione_t *bst_successor(stazione_t *x);
-void inorder_bst_print(stazione_t *x);
 void bst_delete(stazione_t *x);
 void swap(int *a, int *b);
 void heap_heapify(int v[], int size, int i);
 void heap_insert(int v[], int *size, int num);
 void heap_delete(int v[], int *size, int num);
 void heap_sort(int v[], int size);
-void bst_search_print(int key);
 
 bst_t data;
-
-void heap_print(int v[], int size)
-{
-    printf("\t\tHeap (%d): ", size);
-    for (int i = 0; i < size; i++)
-    {
-        printf("%d ", v[i]);
-    }
-    printf("\n");
-}
 
 stazione_t *bst_search(stazione_t *bst, int key)
 {
@@ -134,18 +131,8 @@ stazione_t *bst_search(stazione_t *bst, int key)
 
 stazione_t *bst_insert(int key)
 {
-    stazione_t *stazione;
-    stazione_t *curr, *pre;
-    stazione = malloc(sizeof(stazione_t));
-    if (stazione == NULL)
-    {
-        printf("non aggiunta\n");
-        return NULL;
-    }
-    stazione->key = key;
-    stazione->size = 0;
-    pre = NULL;
-    curr = data.root;
+    stazione_t *pre = NULL;
+    stazione_t *curr = data.root;
     while (curr != NULL)
     {
         pre = curr;
@@ -153,12 +140,20 @@ stazione_t *bst_insert(int key)
         {
             curr = curr->l;
         }
-        else
+        else if (key == curr->key) {
+            printf("non aggiunta\n");
+            return NULL;
+        } else
         {
             curr = curr->r;
         }
     }
+    stazione_t *stazione = malloc(sizeof(stazione_t));
+    stazione->key = key;
+    stazione->size = 0;
     stazione->p = pre;
+    stazione->l = NULL;
+    stazione->r = NULL;
     if (pre == NULL)
     {
         data.root = stazione;
@@ -195,7 +190,7 @@ stazione_t *bst_max(stazione_t *x){
 
 stazione_t *bst_successor(stazione_t *x)
 {
-    stazione_t *y;
+    stazione_t *y = NULL;
     if(x == NULL) {
         return NULL;
     }
@@ -213,7 +208,7 @@ stazione_t *bst_successor(stazione_t *x)
 }
 
 stazione_t *bst_predecessor(stazione_t *x){
-    stazione_t *y;
+    stazione_t *y = NULL;
     if(x == NULL) {
         return NULL;
     }
@@ -230,20 +225,9 @@ stazione_t *bst_predecessor(stazione_t *x){
     return y;
 }
 
-void inorder_bst_print(stazione_t *x)
-{
-    if (x != NULL)
-    {
-        inorder_bst_print(x->l);
-        printf("Stazione: %d\n", x->key);
-        heap_print(x->v, x->size);
-        inorder_bst_print(x->r);
-    }
-}
-
 void bst_delete(stazione_t *x)
 {
-    stazione_t *da_canc, *sottoa;
+    stazione_t *da_canc, *sottoa = NULL;
     if (x == NULL) // stazione non esiste
     {
         printf("non demolita\n");
@@ -330,7 +314,10 @@ void heap_insert(int v[], int *size, int num)
     {
         v[0] = num;
         *size = 1;
-    }
+    } /*else if (num < v[0]) {
+        v[*size] = num;
+        *size += 1;
+    } */
     else
     {
         v[*size] = num;
@@ -344,7 +331,7 @@ void heap_insert(int v[], int *size, int num)
 
 void heap_delete(int v[], int *size, int num)
 {
-    int i;
+    int i = 0;
     for (i = 0; i < *size; i++)
     {
         if (num == v[i])
@@ -401,90 +388,74 @@ void stampaPercorso(stazione_t *tmp, stazione_t *arrivo){
     }
 }
 
-queue_node_t* adjacents(stazione_t* root, int direzione) {
+void adjacents(stazione_t* root, int direzione) {
     if(root == NULL){
-        return NULL;
+        data.adjSize = -1;
+        return;
     }
+    if(root->size == 0) {
+        data.adjSize = -1;
+        return;
+    }
+    data.adjSize = 0;
     if(direzione){
-        // andata CONTROLLA
-        queue_node_t *list = NULL;
-        if(root->size == 0) {
-            return NULL;
-        }
         for(stazione_t* staz = bst_successor(root); staz != NULL && root->key + root->v[0] >= staz->key; staz = bst_successor(staz)){
-            queue_node_t* new = malloc(sizeof(queue_node_t));
-            new->stazione = staz;
-            new->nextAdj = list;
-            list = new; // nell'andata fai aggiungi in coda
+            if(staz->color != 'b' && ( staz->color != 'g' || (staz->dist >= root->dist + 1))) {
+                if(data.adjSize < data.adjMax) {
+                    data.adj[data.adjSize] = staz;
+                    data.adjSize++;
+                } else {
+                    data.adjMax += MAX_ARRAY;
+                    data.adj = realloc(data.adj, data.adjMax*sizeof(stazione_t*));
+                }
+            }
         }
-        // printf("\n\nAdiacenti di %d (successori)\n", root->key);
-        // listPrint(list);
-        return list;
-        // while di tutti i successivi, fino a quando superi distanza raggiungibile con autonomia
-        // crei la lista e la ritorni, aggiungi in testa
     } else {
-        // ritorno CONTROLLA
-        queue_node_t *list = NULL;
-        if(root->size == 0) {
-            return NULL;
-        }
         for(stazione_t* staz = bst_predecessor(root); staz != NULL && root->key - root->v[0] <= staz->key; staz = bst_predecessor(staz)){
-            queue_node_t* new = malloc(sizeof(queue_node_t));
-            new->stazione = staz;
-            new->nextAdj = list;
-            list = new;
+            if(staz->color != 'b' && ( staz->color != 'g' || (staz->dist >= root->dist + 1))) {
+            if(data.adjSize < data.adjMax) {
+                    data.adj[data.adjSize] = staz;
+                    data.adjSize++;
+                } else {
+                    data.adjMax += MAX_ARRAY;
+                    data.adj = realloc(data.adj, data.adjMax*sizeof(stazione_t*));
+                }
+            }
         }
-        // printf("\n\nAdiacenti di %d (predecessori)\n", root->key);
-        // listPrint(list);
-        return list;
-        // while di tutti i precedenti, fino a quando superi distanza raggiungibile con autonomia
-        // crei la lista e la ritorni, aggiungi in testa
-    }
-}
-
-void display(queue_t *queue) {
-    queue_node_t* temp;
-    if (queue->front == NULL) {
-        printf("\nQueue is Empty\n");
-    } else {
-        printf("The queue is \n");
-        temp = queue->front;
-        while (temp) {
-            printf("%d--->", temp->stazione->key);
-            temp = temp -> next;
-        }
-        printf("QUEUE NULL\n\n");
     }
 }
 
 void bfs(stazione_t *partenza, stazione_t *arrivo, int direzione){
     color_bst(data.root, partenza->key);
-    queue_t* Q = createQueue();
-    enqueue(Q, partenza);
-    while(Q->front != NULL) { 
-        stazione_t *u = dequeue(Q);
-        // per ogni v che e' u.adj
-        if(arrivo->dist > u->dist) { // se arrivo ha gia' dist minore, inutile calcolare gli adiacenti (controlla <= se va bene)
-            for(queue_node_t *temp = adjacents(u, direzione); temp != NULL; temp = temp->nextAdj){
-                if(temp->stazione->dist > u->dist) {
-                    temp->stazione->dist = u->dist + 1;
-                    if(temp->stazione->adjPrec == NULL) {
-                        temp->stazione->adjPrec = u;
+    enqueue(data.Q, partenza);
+    int exit = 0;
+    while(data.Q->front != NULL && !exit) { 
+        stazione_t *u = dequeue(data.Q);
+        if(u->key == arrivo->key) {
+            exit = 1;
+        }
+        if(arrivo->dist > u->dist && !exit) {
+            adjacents(u, direzione);
+            for(int i = 0; data.adjSize != -1 && i < data.adjSize; i++){
+                stazione_t *stazione = data.adj[i];
+                if(stazione->dist > u->dist) {
+                    stazione->dist = u->dist + 1;
+                    if(stazione->adjPrec == NULL) {
+                        stazione->adjPrec = u;
                     }
-                    if(temp->stazione->adjPrec->key > u->key){ // da cambiare per andata e ritorno?
-                        temp->stazione->adjPrec = u; 
-                    } // in teoria, se partendo da partenza nel ritorno stampo adjPrec, ho percorso
-
-                    if (temp->stazione->color == 'w') {
-                        temp->stazione->color = 'g';
-                        enqueue(Q, temp->stazione);
+                    if(stazione->adjPrec->key > u->key){
+                        stazione->adjPrec = u; 
+                    }
+                    if (stazione->color == 'w') {
+                        stazione->color = 'g';
+                        enqueue(data.Q, stazione);
                     }
                 }
                 u->color = 'b';
             }
         }
     }
-    deleteQueue(Q);
+    deleteQueue(data.Q);
     if(arrivo->adjPrec == NULL) {
         printf("nessun percorso\n");
         return;
@@ -496,42 +467,38 @@ void aggiungiStazione()
 {
     int distanza, autonomiaTemp;
     int numeroAuto;
-    // aggiungi-stazione distanza numero-auto autonomia-auto-1 ... autonomia-auto-n
-    if(scanf("%d ", &distanza)) {};
-    // crea stazione
-    if(scanf("%d ", &numeroAuto)) {};
-
-    if (numeroAuto > MAX_HEAP || bst_search(data.root, distanza) != NULL)
+    getchar_scanf_int(&distanza);
+    getchar_scanf_int(&numeroAuto);
+    if (numeroAuto > MAX_HEAP)
     {
         printf("non aggiunta\n");
         return;
     }
     stazione_t *stazione = bst_insert(distanza);
+    if(stazione != NULL) {
     stazione->size = numeroAuto;
     stazione->v = malloc(sizeof(int) * MAX_HEAP);
     for (int i = 0; i < numeroAuto; i++)
     {
-        if(scanf("%d ", &autonomiaTemp)) {};
-        //heap_insert(stazione->heap, autonomiaTemp);
+        getchar_scanf_int(&autonomiaTemp);
         stazione->v[i] = autonomiaTemp;
     }
     heap_sort(stazione->v, stazione->size);
+    }
 }
 
 void demolisciStazione()
 {
     int distanza;
-    // demolisci-stazione distanza
-    if(scanf("%d ", &distanza)) {};
+    getchar_scanf_int(&distanza);
     bst_delete(bst_search(data.root, distanza));
 }
 
 void aggiungiAuto()
 {
     int distanza, autonomia;
-    // aggiungi-auto distanza-stazione autonomia-auto-da-aggiungere
-    if(scanf("%d ", &distanza)) {};
-    if(scanf("%d ", &autonomia)) {};
+    getchar_scanf_int(&distanza);
+    getchar_scanf_int(&autonomia);
 
     stazione_t *stazione = bst_search(data.root, distanza);
     if (stazione == NULL)
@@ -547,9 +514,8 @@ void rottamaAuto()
 {
     int distanza, autonomia;
     // rottama-auto distanza-stazione autonomia-auto-da-rottamare
-
-    if(scanf("%d ", &distanza)) {};
-    if(scanf("%d ", &autonomia)) {};
+    getchar_scanf_int(&distanza);
+    getchar_scanf_int(&autonomia);
 
     stazione_t *stazione = bst_search(data.root, distanza);
     if (stazione == NULL)
@@ -558,17 +524,28 @@ void rottamaAuto()
         return;
     }
     heap_delete(stazione->v, &(stazione->size), autonomia);
+}
 
-    // printf("RIMUOVI AUTO %d %d\n", distanza, autonomia);
-    //  rimuovi auto alla lista di auto della stazione (se presente)
+void demolisciNodo(stazione_t *x){
+    if(x == NULL){
+        return;
+    }
+    demolisciNodo(x->l);
+    demolisciNodo(x->r);
+    free(x->v);
+    free(x);
+}
+
+void demolisciAlbero() {
+    demolisciNodo(data.root);
 }
 
 void pianificaPercorso()
 {
     int inizio, fine;
     // pianifica-percorso distanza-stazione-partenza distanza-stazione-arrivo
-    if(scanf("%d ", &inizio)) {};
-    if(scanf("%d ", &fine)) {};
+    getchar_scanf_int(&inizio);
+    getchar_scanf_int(&fine);
     stazione_t *partenza = bst_search(data.root, inizio);
     if(partenza == NULL) {
         printf("nessun percorso\n");
@@ -585,27 +562,33 @@ void pianificaPercorso()
 void parser()
 {
     char istr[MAX_ISTR + 1];
-    while (scanf("%s ", istr) != EOF)
-    {
-        if (!strcmp(istr, "aggiungi-stazione"))
-        {
-            aggiungiStazione();
-        }
-        else if (!strcmp(istr, "demolisci-stazione"))
-        {
-            demolisciStazione();
-        }
-        else if (!strcmp(istr, "aggiungi-auto"))
-        {
-            aggiungiAuto();
-        }
-        else if (!strcmp(istr, "rottama-auto"))
-        {
-            rottamaAuto();
-        }
-        else if (!strcmp(istr, "pianifica-percorso"))
-        {
-            pianificaPercorso();
+    char c;
+    int i = 0;
+
+    while (1) {
+        c = getc_unlocked(stdin);
+
+        if (c == ' ' || c == '\n' || c == EOF) {
+            istr[i] = '\0'; // Termina la stringa
+            i = 0;
+
+            if (strcmp(istr, "aggiungi-stazione") == 0) {
+                aggiungiStazione();
+            } else if (strcmp(istr, "demolisci-stazione") == 0) {
+                demolisciStazione();
+            } else if (strcmp(istr, "aggiungi-auto") == 0) {
+                aggiungiAuto();
+            } else if (strcmp(istr, "rottama-auto") == 0) {
+                rottamaAuto();
+            } else if (strcmp(istr, "pianifica-percorso") == 0) {
+                pianificaPercorso();
+            }
+
+            if (c == EOF) {
+                break;
+            }
+        } else {
+            istr[i++] = c;
         }
     }
 }
@@ -613,8 +596,10 @@ void parser()
 int main(int argc, char *argv[])
 {
     data.root = NULL;
+    data.Q = createQueue();
+    data.adj = malloc(sizeof(stazione_t*) * MAX_ARRAY);
+    data.adjMax = MAX_ARRAY;
+    data.adjSize = 0;
     parser();
     return 0;
 }
-
-//TODO MODIFICA LONG IN UNSIGNED INT

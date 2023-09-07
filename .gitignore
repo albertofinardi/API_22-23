@@ -2,9 +2,9 @@
 *
 # Unignore all with extensions
 !*.*
+!Voti/
 
 # Ignore .txt
 *.txt
 
 *.DS_Store
-test.c
